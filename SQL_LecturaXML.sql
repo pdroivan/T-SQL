@@ -1,0 +1,28 @@
+DECLARE @XML XML = '<clsParametros><DOCUMENTO944 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><ENCABEZADO><TRANSACCION>77</TRANSACCION><CEDIS>DC64</CEDIS><CUENTA_CLIENTE>45887</CUENTA_CLIENTE><ORDEN_EMBARQUE>1101010888</ORDEN_EMBARQUE><ORDEN_WMS>198874</ORDEN_WMS><FECHA_CONFIRMACION>20220131</FECHA_CONFIRMACION></ENCABEZADO><DETALLES><DETALLE><DETALLE_944><CANTIDAD>4</CANTIDAD><CLAVE_PRODUCTO>10710</CLAVE_PRODUCTO><UNIDAD>CA</UNIDAD><FECHA_CADUCIDAD>20220429</FECHA_CADUCIDAD><NUM_LOTE>A02</NUM_LOTE><LOTE_TARIMA>A02T</LOTE_TARIMA><SUBDETALLE><CODIGO_BARRAS><string>0101010121</string><string>0101010122</string><string>0101010123</string><string>0101010124</string></CODIGO_BARRAS></SUBDETALLE></DETALLE_944><DETALLE_944><CANTIDAD>2</CANTIDAD><CLAVE_PRODUCTO>10720</CLAVE_PRODUCTO><UNIDAD>CA</UNIDAD><FECHA_CADUCIDAD>20220422</FECHA_CADUCIDAD><NUM_LOTE>A01</NUM_LOTE><LOTE_TARIMA>A01T</LOTE_TARIMA><SUBDETALLE><CODIGO_BARRAS><string>0101010131</string><string>0101010132</string><string>0101010133</string><string>0101010134</string></CODIGO_BARRAS></SUBDETALLE></DETALLE_944></DETALLE></DETALLES></DOCUMENTO944></clsParametros>'
+
+
+	SELECT 
+		T.Item.query('./TRANSACCION').value('.','varchar(50)')				TRANSACCION,  
+		T.Item.query('./CEDIS').value('.','varchar(50)')					CEDIS,
+		T.Item.query('./CUENTA_CLIENTE').value('.','varchar(50)')			CUENTA_CLIENTE,
+		T.Item.query('./ORDEN_EMBARQUE').value('.','varchar(50)')				ORDEN_EMBARQUE,
+		T.Item.query('./ORDEN_WMS').value('.','varchar(50)')				ORDEN_WMS,
+		T.Item.query('./FECHA_CONFIRMACION').value('.','varchar(50)')			FECHA_CONFIRMACION
+	
+	FROM 		@xml.nodes('/clsParametros/DOCUMENTO944/ENCABEZADO') 	AS		T(Item)
+
+
+	SELECT Detalle .Detalles.query('./CANTIDAD').value('.','VARCHAR(50)') CANTIDAD,
+	 Detalle.Detalles.query('./CLAVE_PRODUCTO').value('.','VARCHAR(50)') CLAVE_PRODUCTO,
+	 Detalle.Detalles.query('./UNIDAD').value('.','VARCHAR(50)') UNIDAD,
+	 Detalle.Detalles.query('./FECHA_CADUCIDAD').value('.','VARCHAR(50)') FECHA_CADUCIDAD,
+	 Detalle.Detalles.query('./NUM_LOTE').value('.','VARCHAR(50)') NUM_LOTE,
+	 Detalle.Detalles.query('./LOTE_TARIMA').value('.','VARCHAR(50)') LOTE_TARIMA, 
+	 CodigoBarras.query('.').value('.','varchar(50)') CODIGO_BARRAS
+
+
+	 
+	FROM 		@xml.nodes('/clsParametros/DOCUMENTO944/DETALLES/DETALLE/DETALLE_944') 	AS		Detalle(Detalles)
+
+	OUTER APPLY
+	Detalles.nodes('./SUBDETALLE/CODIGO_BARRAS/string') SubDetalle(CodigoBarras) 
